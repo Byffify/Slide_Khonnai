@@ -19,7 +19,8 @@ from build_landing_v2 import ARROW, CHEVRON_DOWN, CHEVRON_RIGHT, CHEVRON_UP, FAQ
 
 NAME = "Landing v2 — Tokens & States"
 LANDING = ["Landing v2 — Desktop", "Landing v2 — Features menu", "Landing v2 — Services menu",
-           "Landing v2 — Language menu", "Landing v2 — Mobile", "Landing v2 — Mobile menu", NAME]
+           "Landing v2 — Language menu", "Landing v2 — Mobile", "Landing v2 — Mobile menu",
+           "Landing v2 — Mobile sticky", NAME]
 ARCHIVE = ["Navbar — Default", "Navbar — Features open", "Hero — Default"]
 COLLECTION = "khonnai"
 # one brand blue for the landing (#1650D7, as in the pitch deck); the app screens' #1F56D6 is the app's own token
@@ -127,7 +128,7 @@ def state_row(parent, title, note, cells, dark=False):
 def nav_item(parent, fill=None, color=INK, chevron=CHEVRON_DOWN, effects=None):
     it = row(parent, "Menu item", gap=4, padding=[10, 12, 10, 12], cornerRadius=999, minHeight=44, fill=fill,
              effects=effects or [])
-    txt(it, "Features", 15, "Medium", color)
+    th(it, "ฟีเจอร์", 16, "Regular", color)
     icon(it, chevron, 16, color if color != INK else MUTED)
 
 
@@ -143,7 +144,7 @@ def faq_item(parent, fill=FAQ_BG, open_=False, effects=None):
 
 def link(parent, color=MUTED, underline=False, effects=None, fill=None):
     r = row(parent, "Link", padding=[6, 4, 6, 4], cornerRadius=6, minHeight=44, fill=fill, effects=effects or [])
-    t = txt(r, "Pricing", 15, "Regular", color)
+    t = th(r, "ราคา", 15, "Regular", color)
     if underline:
         one("node.set", {"id": t, "textDecoration": "underline"})
 
@@ -160,18 +161,18 @@ def states(parent):
         lambda c: button(c, "เริ่มใช้ฟรี", BLUE, WHITE, effects=ring(), arrow=True),
         lambda c: button(c, "เริ่มใช้ฟรี", DISABLED_BG, DISABLED_FG, arrow=True)])
     state_row(s, "Outline button", "บนพื้นสว่าง", [
-        lambda c: button(c, "นัดดูเดโม", WHITE, INK, "#CBD5E1"),
-        lambda c: button(c, "นัดดูเดโม", HOVER, INK, "#CBD5E1"),
-        lambda c: button(c, "นัดดูเดโม", "#E2E8F0", INK, "#94A3B8"),
-        lambda c: button(c, "นัดดูเดโม", WHITE, INK, "#CBD5E1", effects=ring()),
-        lambda c: button(c, "นัดดูเดโม", WHITE, DISABLED_FG, DISABLED_BG)])
+        lambda c: button(c, "คุยทาง LINE", WHITE, INK, "#CBD5E1"),
+        lambda c: button(c, "คุยทาง LINE", HOVER, INK, "#CBD5E1"),
+        lambda c: button(c, "คุยทาง LINE", "#E2E8F0", INK, "#94A3B8"),
+        lambda c: button(c, "คุยทาง LINE", WHITE, INK, "#CBD5E1", effects=ring()),
+        lambda c: button(c, "คุยทาง LINE", WHITE, DISABLED_FG, DISABLED_BG)])
     state_row(s, "Buttons on blue", "Hero และ CTA ปิดท้าย", [
-        lambda c: (button(c, "เริ่มใช้ฟรี", WHITE, BLUE, arrow=True), button(c, "นัดดูเดโม", None, WHITE, WHITE)),
-        lambda c: (button(c, "เริ่มใช้ฟรี", BLUE_50, BLUE, arrow=True), button(c, "นัดดูเดโม", "#FFFFFF1F", WHITE, WHITE)),
+        lambda c: (button(c, "เริ่มใช้ฟรี", WHITE, BLUE, arrow=True), button(c, "คุยทาง LINE", None, WHITE, WHITE)),
+        lambda c: (button(c, "เริ่มใช้ฟรี", BLUE_50, BLUE, arrow=True), button(c, "คุยทาง LINE", "#FFFFFF1F", WHITE, WHITE)),
         lambda c: (button(c, "เริ่มใช้ฟรี", "#D9E4FA", BLUE_PRESSED, arrow=True),
-                   button(c, "นัดดูเดโม", "#FFFFFF33", WHITE, WHITE)),
+                   button(c, "คุยทาง LINE", "#FFFFFF33", WHITE, WHITE)),
         lambda c: (button(c, "เริ่มใช้ฟรี", WHITE, BLUE, effects=ring(WHITE, BLUE), arrow=True),
-                   button(c, "นัดดูเดโม", BLUE, WHITE, WHITE, effects=ring(WHITE, BLUE))),
+                   button(c, "คุยทาง LINE", BLUE, WHITE, WHITE, effects=ring(WHITE, BLUE))),
         None], dark=True)
     state_row(s, "Nav item", "เมนูบนแถบ (Open = dropdown เปิด)", [
         lambda c: nav_item(c),

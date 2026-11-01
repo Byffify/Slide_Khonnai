@@ -12,7 +12,9 @@ feedspring.com (reverse-engineered 2026-11-01) → khonnai:
   dark photo CTA banner                                  → pricing: Free / Basic 299 / Pro 699 with limit bars
   FAQ accordion (620 wide, 16 radius, #F5F5F5)            → คำถามที่พบบ่อย
   blue gradient closing CTA with product screenshot      → same, with three phones
-  footer columns + Discord card                          → footer columns + demo card
+  footer columns + Discord card                          → footer columns + LINE card
+Critique pass (2026-11-01): Thai nav, one primary (เริ่มใช้ฟรี) + LINE as the secondary action, plans framed by
+shop size, ≤4 items per menu, app screens cropped near 1:1, labelled slots where real content is still missing.
 Backgrounds run brand blue → orange; white text only sits on the blue part (≥ 4.5:1).
 Content comes from khonnai-pitch-final.pdf and the hero brief; no customer quotes or user counts are invented.
 """
@@ -22,7 +24,7 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 from build_landing_hero import ARROW, SCREENS, phone  # noqa: E402
-from build_landing_navbar import (BLUE, BLUE_50, BORDER, CHEVRON_DOWN, CHEVRON_UP, F_TH, HOVER, ICON, INK, LOGO, MENU, MUTED,  # noqa: E402
+from build_landing_navbar import (BLUE, BLUE_50, BORDER, CHEVRON_DOWN, CHEVRON_UP, F_TH, HOVER, ICON, INK, LOGO, MUTED,  # noqa: E402
                                   PREVIEW, WHITE, box, col, export_frame, icon, one, row, run, txt)
 
 NAME = "Landing v2 — Desktop"
@@ -36,8 +38,14 @@ FAQ_BG = "#F5F5F5"
 CHEVRON_RIGHT = "M6 4l4 4-4 4"   # 16 grid
 GLOBE = ("M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"
          " 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z")   # Lucide globe, 24 grid
-# blue → orange; the first half stays dark enough for white text
-BRAND_GRADIENT = ["#1650D7", "#1A53D8", "#2459DB", "#3F68DF", "#9C86D0", "#FF9F5E", "#FFE3CC"]
+# blue → orange through a pale cream band (no muddy violet midtone); white text stays above 0.43
+BRAND_GRADIENT = ["#1650D7", "#1A53D8", "#2459DB", "#2F60DD", "#A9BEF3", "#FFE6D2", "#FFB27A", "#FFF1E6"]
+CLOSING_GRADIENT = ["#1650D7", "#1E57DA", "#2A5EDC", "#A9BEF3", "#FFE6D2", "#FF9F5E"]
+NAV = [("ฟีเจอร์", True), ("ราคา", False), ("บริการ", True), ("ติดต่อ", False)]
+PRIMARY = "เริ่มใช้ฟรี"            # one name for the main action, everywhere
+LINE_CTA = "คุยกับทีมทาง LINE"     # the secondary action: these owners ask a person first
+LOGIN = "เข้าสู่ระบบ"
+PLACEHOLDER = "#9A4A0C"           # labels on slots waiting for real content
 HEADLINE_ACCENT = "#FFD2B0"   # 64px on the blue part, above 3:1
 CHECK = "M4 10.5l4 4 8-9"   # 20 grid
 SHADOW = [{"type": "dropShadow", "color": "#0F172A1A", "offset": [0, 12], "radius": 32, "spread": -8}]
@@ -56,7 +64,7 @@ def center(parent, text, size, style="Regular", color=INK, **props):
     return th(parent, text, size, style, color, textAlign="center", **props)
 
 
-def pill(parent, label, kind, size=48, arrow=False):
+def pill(parent, label, kind, size=48, arrow=False, lead=None):
     fill, color = {"primary": (BLUE, WHITE), "white": (WHITE, BLUE), "outline-light": (None, WHITE),
                    "dark": (NAVY, WHITE), "outline": (WHITE, INK)}[kind]
     b = row(parent, "Button / " + label, gap=8, padding=[0, 24, 0, 24], cornerRadius=999, height=size,
@@ -65,6 +73,8 @@ def pill(parent, label, kind, size=48, arrow=False):
         stroke(b, "#CBD5E1")
     if kind == "outline-light":   # on the blue: white text sits on the blue itself, not on a glass tint
         one("node.set", {"id": b, "stroke": WHITE, "strokeWeight": 1.5, "strokeAlign": "inside"})
+    if lead:
+        icon(b, lead, 20, color)
     family = F_TH if any("฀" <= ch <= "๿" for ch in label) else None
     if family:
         th(b, label, 16, "Bold", color)
@@ -127,18 +137,18 @@ def floating_nav(parent, active=None):
     one("node.set", {"id": logo, "name": "Logo / khonnai"})
     menu = row(left, "Menu", gap=4)
     items = {}
-    for label, dropdown in MENU:
+    for label, dropdown in NAV:
         on = label == active
         item = row(menu, "Menu / " + label, gap=4, padding=[10, 12, 10, 12], cornerRadius=999, minHeight=44,
                    fill=HOVER if on else None)
-        txt(item, label, 15, "Medium", BLUE if on else INK)
+        th(item, label, 16, "Bold" if on else "Regular", BLUE if on else INK)
         if dropdown:
             icon(item, CHEVRON_UP if on else CHEVRON_DOWN, 16, BLUE if on else MUTED)
         items[label] = item
     right = row(nav, "Actions", gap=8)
     items["lang"] = lang_switch(right)
-    pill(right, "Sign up", "outline", 44)
-    pill(right, "Schedule a Demo", "primary", 44, arrow=True)
+    pill(right, LOGIN, "outline", 44)
+    pill(right, PRIMARY, "primary", 44, arrow=True)
     return items
 
 
@@ -159,13 +169,13 @@ def pilot_card(parent):
     icon(top, CHECK, 20, BLUE)
     th(top, "ทดสอบกับร้านค้าส่งนำร่อง · 28 ต.ค. 2569", 14, "Bold", BLUE)
     stats = row(c, "Stats", gap=12)
-    for big, small in (("1 ร้าน", "ร้านนำร่อง\nที่ทดสอบจริง"), ("30 นาที", "เพิ่มสต็อก ทำบิล\nออกบิลครบ"),
-                       ("7 ข้อ", "ข้อค้นพบที่นำ\nไปปรับ UX")):
+    for big, small in (("1 ร้าน", "ร้านนำร่อง\nที่ทดสอบจริง"), ("30 นาที", "ทดลองใช้งาน\nโดยประมาณ"),
+                       ("7 ข้อ", "สิ่งที่ปรับตาม\nเสียงร้าน")):
         s = col(stats, "Stat", gap=4, padding=12, cornerRadius=16, fill=SURFACE, width=109, sizingH="fixed")
         th(s, big, 22, "Bold", INK)
         th(s, small, 14, "Regular", MUTED, lineHeight="150%")
-    th(c, "เจ้าของร้านลองใช้งานหลักด้วยตัวเอง แล้วเราปรับ\nหน้าจอให้อ่านง่ายขึ้นจากผลทดสอบ", 15, "Regular",
-       MUTED, lineHeight="165%")
+    th(c, "เจ้าของร้านลองเพิ่มสต็อก ทำบิล และออกบิลด้วยตัวเอง\nแล้วเราปรับหน้าจอให้อ่านง่ายขึ้นจากผลทดสอบ", 15,
+       "Regular", MUTED, lineHeight="165%")
     return c
 
 
@@ -182,28 +192,22 @@ def hero(parent):
                  "และออกบิลจากข้อมูลชุดเดียวกัน สำหรับร้านค้าส่งชุดชั้นในและเสื้อผ้าขนาดเล็ก",
            20, "Regular", WHITE, lineHeight="165%")
     ctas = row(copy, "CTAs", gap=12, paddingTop=8)
-    pill(ctas, "เริ่มใช้ฟรี", "white", arrow=True)
-    pill(ctas, "นัดดูเดโม", "outline-light")
+    pill(ctas, PRIMARY, "white", arrow=True)
+    pill(ctas, LINE_CTA, "outline-light", lead=MENU_ICONS["message"])
+    center(copy, "เริ่มด้วยแพ็กเกจ Free 0 บาท · สินค้า 20 รหัส · 50 บิลต่อเดือน", 15, "Regular", WHITE)
     grid = row(h, "Mosaic", gap=24, crossAlign="min")
-    mosaic_card(grid, "สต็อกสินค้า", "tile-stock.png", "เห็นจำนวนพร้อมขายแยกไซซ์และสี\nทุกรุ่นในจอเดียว", 300, 322)
-    mid = col(grid, "Middle", gap=24)
-    pilot_card(mid)
-    tiles = row(mid, "Tiles", gap=24)
-    for img, label in (("tile-reserve.png", "ใบจองที่กันสต็อก"), ("tile-history.png", "ประวัติการขาย")):
-        t = col(tiles, "Tile / " + label, gap=10, padding=10, cornerRadius=24, fill=WHITE, effects=SHADOW,
-                width=188, sizingH="fixed")
-        screen_img(t, img, 168, 160, 14)
-        th(t, label, 14, "Bold", INK)
-    mosaic_card(grid, "บิลเงินสด", "tile-bill.png", "ออกบิลตามแบบฟอร์มของร้าน\nตัดสต็อกให้ทันที", 300, 322)
+    # screens cropped near 1:1 so the app text stays readable (the page promises large, easy type)
+    mosaic_card(grid, "สต็อกสินค้า", "crop-stock.png", "เห็นจำนวนพร้อมขายแยกไซซ์และสี\nทุกรุ่นในจอเดียว", 340, 288)
+    pilot_card(grid)
+    mosaic_card(grid, "บิลเงินสด", "crop-bill.png", "ออกบิลตามแบบฟอร์มของร้าน\nตัดสต็อกให้ทันที", 340, 288)
     fade = one("node.create", {"type": "rectangle", "parent": h, "x": 0, "y": 1070, "width": 1440, "height": 50,
                                "name": "Fade", "props": {"fills": [{"type": "linearGradient",
                                                                      "stops": ["#FFFFFF00", "#FFFFFF"]}]}})["id"]
     one("node.set", {"id": fade, "absolute": True, "x": 0, "y": 1070})
-    hero_chip(h, 92, 720, "ออกบิลแล้ว", "ตัดสต็อก 5 แพ็ก", "#16A34A")
-    hero_chip(h, 1132, 900, "รับของแล้ว", "+ ฿1,160", ORANGE)
-    glow(h, 980, -160, 640, 420, "#7FA8FF", 0.55)
-    glow(h, -160, 700, 620, 520, ORANGE, 0.55)
-    glow(h, 1040, 760, 520, 420, "#FFB27A", 0.6)
+    hero_chip(h, 72, 760, "ออกบิลแล้ว", "ตัดสต็อก 5 แพ็ก", "#16A34A")
+    hero_chip(h, 1150, 920, "รับของแล้ว", "+ ฿1,160", ORANGE)
+    glow(h, 980, -160, 640, 420, "#7FA8FF", 0.5)
+    glow(h, -200, 820, 560, 420, ORANGE, 0.35)
 
 
 def hero_chip(parent, x, y, label, value, color):
@@ -220,10 +224,21 @@ def hero_chip(parent, x, y, label, value, color):
 
 
 def proof_line(parent):
-    s = section(parent, "Proof line", pad=(0, 80, 24, 80))
-    p = row(s, "Line", gap=10)
+    s = section(parent, "Proof line", gap=0, pad=(8, 80, 24, 80))
+    r = row(s, "Evidence", gap=32, padding=[20, 28, 20, 20], cornerRadius=24, fill=SURFACE, width=1040,
+            sizingH="fixed", mainAlign="spaceBetween")
+    stroke(r)
+    who = row(r, "Owner slot", gap=16)
+    avatar = box(who, "Photo placeholder", 64, 64, layout="horizontal", mainAlign="center", crossAlign="center",
+                 cornerRadius=999, fill=ORANGE_50)
+    one("node.set", {"id": avatar, "stroke": ORANGE, "strokeWeight": 1.5, "strokeAlign": "inside", "dashes": [4, 4]})
+    icon(avatar, MENU_ICONS["store"], 24, PLACEHOLDER)
+    q = col(who, "Quote", gap=4)
+    th(q, "“คำพูดสั้น ๆ จากเจ้าของร้านนำร่อง”", 18, "Bold", INK)
+    th(q, "ตำแหน่งรูปและคำพูดจริง · รอขออนุญาตร้าน", 14, "Regular", PLACEHOLDER)
+    p = row(r, "Line", gap=10)
     icon(p, CHECK, 20, BLUE)
-    th(p, "ออกแบบจากการทดสอบกับร้านค้าส่งนำร่อง ไม่ใช่จากโต๊ะประชุม", 18, "Bold", INK)
+    th(p, "ออกแบบจากการทดสอบกับร้านค้าส่งนำร่อง\nไม่ใช่จากโต๊ะประชุม", 16, "Bold", INK, lineHeight="150%")
 
 
 # ---------------------------------------------------------------- overview bento
@@ -239,12 +254,18 @@ def bento_card(parent, w, title, body):
     return visual
 
 
+SWATCH = {"ดำ": "#222222", "ขาว": "#F4F4F4", "เนื้อ": "#E8C4A0"}   # the colours the pilot shop stocks
+
+
 def stock_matrix(parent):
     m = col(parent, "Size × colour", gap=8, padding=20, cornerRadius=20, fill=WHITE, effects=SHADOW)
     rows = [("", ["32", "34", "36"]), ("ดำ", ["12", "8", "0"]), ("ขาว", ["3", "6", "—"]), ("เนื้อ", ["—", "2", "9"])]
     for i, (colour, cells) in enumerate(rows):
         r = row(m, "Row " + (colour or "head"), gap=8)
-        lab = box(r, "Colour", 56, 36, layout="horizontal", crossAlign="center")
+        lab = box(r, "Colour", 72, 36, layout="horizontal", gap=8, crossAlign="center")
+        if colour:
+            dot = box(lab, "Swatch", 14, 14, cornerRadius=999, fill=SWATCH[colour])
+            stroke(dot, "#CBD5E1")
         th(lab, colour, 15, "Bold", INK)
         for v in cells:
             cell = box(r, "Cell", 64, 36, layout="horizontal", mainAlign="center", crossAlign="center",
@@ -278,6 +299,17 @@ def sellable(parent):
     th(f, "ระบบไม่ยอมออกบิลถ้าของพร้อมขายไม่พอ", 14, "Bold", INK)
 
 
+def reservation_moment(parent, w):
+    """One reservation from the app at reading size, and the tap that turns it into a bill."""
+    m = col(parent, "Reservation moment", gap=16, crossAlign="center")
+    screen_img(m, "crop-reserve-card.png", w, round(w / 3), 18)   # 381:127 crop of the first reservation
+    b = row(m, "Button / ลูกค้ารับของแล้ว", gap=8, padding=[0, 22, 0, 22], cornerRadius=999, height=48,
+            sizingV="fixed", fill=BLUE, effects=SHADOW)
+    icon(b, CHECK, 20, WHITE)
+    th(b, "ลูกค้ารับของแล้ว · ออกบิลเลย", 16, "Bold", WHITE)
+    return m
+
+
 def overview(parent):
     s = section(parent, "Overview", gap=56)
     heading(s, "ข้อมูลชุดเดียว\nใช้ได้ทั้งสต็อก การจอง และบิล",
@@ -287,12 +319,11 @@ def overview(parent):
     stock_matrix(bento_card(r1, 500, "สต็อกแยกรุ่น สี และไซซ์",
                             "เห็นทันทีว่าไซซ์ไหน สีไหน เหลือกี่แพ็ก\nและตัวไหนหมดต้องเติม"))
     bill_steps(bento_card(r1, 756, "ออกบิลใน 3 ขั้น",
-                          "เลือกสินค้า ยืนยันออเดอร์ แล้วได้บิลเงินสดตามแบบฟอร์มของร้าน\nสต็อกถูกตัดให้ทันทีที่ยืนยัน"))
+                          "เลือกสินค้า ยืนยันออเดอร์ แล้วได้บิลเงินสดตามแบบฟอร์มของร้าน\nสต็อกถูกตัดทันทีที่ยืนยัน และบันทึกบิลเป็น PDF ได้"))
     r2 = row(g, "Row 2", gap=24)
     v = bento_card(r2, 756, "ใบจองที่กันสต็อกไว้ให้",
                    "จองจากหน้าร้านหรือ LINE ใช้สต็อกชุดเดียวกัน\nกด \"ลูกค้ารับของแล้ว\" จึงออกบิลโดยไม่ตัดซ้ำ")
-    p, _ = phone(v, "reserve", 250, 0, 0, "การจอง")
-    one("node.set", {"id": p, "absolute": True, "x": 320, "y": 28})
+    reservation_moment(v, 540)
     sellable(bento_card(r2, 500, "ไม่ขายเกินของที่มี",
                         "ยืนยันบิลได้เมื่อคงเหลือหักของที่จองไว้แล้วยังพอ\nกันขายชิ้นสุดท้ายซ้ำ"))
 
@@ -303,9 +334,8 @@ POINTS = [
     ("ตัวอักษรใหญ่ อ่านง่ายสำหรับวัย 40+", None),
     ("เพิ่มรุ่นใหม่ได้ในหน้าเดียว", None),
     ("ใช้ผ่านเว็บบนมือถือ ไม่ต้องติดตั้ง", None),
-    ("บันทึกบิลเป็น PDF เพื่อพิมพ์หรือส่งต่อ", None),
 ]
-POINT_ICONS = ["home", "type", "package", "smartphone", "file"]
+POINT_ICONS = ["home", "type", "package", "smartphone"]
 POINT_PATHS = {  # Lucide
     "home": "M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10",
     "type": "M4 7V4h16v3 M9 20h6 M12 4v16",
@@ -326,10 +356,8 @@ def float_chip(parent, x, y, label, value, color):
 
 def easy(parent):
     s = section(parent, "Easy to use", gap=48, pad=(48, 80, 96, 80))
-    head = box(s, "Head", 1280, 100, layout="horizontal", mainAlign="spaceBetween", crossAlign="max",
-               sizingH="fixed", sizingV="hug")
+    head = box(s, "Head", 1280, 100, layout="horizontal", crossAlign="max", sizingH="fixed", sizingV="hug")
     heading(head, "ขั้นตอนสั้น ตัวใหญ่\nเจ้าของร้านใช้เองได้ทุกวัน", align="left")
-    pill(head, "ดูฟีเจอร์ทั้งหมด", "primary", arrow=True)
     body = row(s, "Body", gap=40, crossAlign="min")
     lst = col(body, "Points", gap=6, width=500, sizingH="fixed")
     for i, (title, desc) in enumerate(POINTS):
@@ -347,40 +375,34 @@ def easy(parent):
                 fills=[{"type": "linearGradient", "stops": [BLUE_50, "#F4ECFA", ORANGE_50], "from": [0, 0], "to": [1, 1]}])
     one("node.create", {"type": "ellipse", "parent": panel, "x": 190, "y": 60, "width": 360, "height": 360,
                         "name": "Backdrop", "props": {"fill": "#FFFFFF99"}})
-    phone(panel, "home", 520, 251, 40, "หน้าโฮม")
-    float_chip(panel, 40, 120, "รอรับของ", "3 ออเดอร์", BLUE)
-    float_chip(panel, 540, 300, "ของที่ต้องเติม", "25 แพ็ก", ORANGE)
+    phone(panel, "home", 900, 165, 40, "หน้าโฮม")   # near 1:1; the panel crops it below the fold
+    float_chip(panel, 28, 150, "รอรับของ", "3 ออเดอร์", BLUE)
+    float_chip(panel, 566, 330, "ของที่ต้องเติม", "25 แพ็ก", ORANGE)
 
 
 # ---------------------------------------------------------------- pricing
-# slide 8 of the pitch: prices still being tested with pilot shops; yearly assumed 10% off
-PLANS = [("Free", "0", "ให้ร้านลองใช้ก่อนจ่าย", 20, 50, "เริ่มใช้ฟรี", "outline"),
-         ("Basic", "299", "ร้านค้าส่งทั่วไป", 200, 500, "เลือก Basic", "white"),
-         ("Pro", "699", "ร้านที่มียอดขายสูง", 1000, 2000, "เลือก Pro", "dark")]
+# slide 8 of the pitch: prices still being tested with pilot shops. Daily bills = monthly limit / 30.
+PLANS = [("Free", "0", "ให้ร้านลองใช้ก่อนจ่าย", "20", "50", "ออกบิลได้ราววันละ 1–2 ใบ", PRIMARY, "outline"),
+         ("Basic", "299", "ร้านค้าส่งทั่วไป", "200", "500", "ออกบิลได้ราววันละ 15 ใบ", "เลือก Basic", "white"),
+         ("Pro", "699", "ร้านที่มียอดขายสูง", "1,000", "2,000", "ออกบิลได้ราววันละ 65 ใบ", "เลือก Pro", "outline")]
 INCLUDED = ["สต็อกแยกรุ่น สี และไซซ์", "ใบจองที่กันสต็อก", "ออกบิลเงินสดและบันทึก PDF"]
-BAR = [{"type": "linearGradient", "stops": [BLUE, ORANGE], "from": [0, 0.5], "to": [1, 0.5]}]
-BAR_ON_BLUE = [{"type": "linearGradient", "stops": ["#FFD2B0", ORANGE], "from": [0, 0.5], "to": [1, 0.5]}]
 
 
-def meter(parent, label, value, max_value, dark):
-    m = col(parent, "Meter / " + label, gap=8, sizingH="fill")
-    top = row(m, "Label", gap=8, mainAlign="spaceBetween", sizingH="fill")
-    th(top, label, 14, "Regular", "#FFFFFFCC" if dark else MUTED)
-    txt(top, f"{value:,}", 15, "Bold", WHITE if dark else INK)
-    track = box(m, "Track", 316, 8, cornerRadius=999, fill="#FFFFFF33" if dark else "#E2E8F0")
-    box(track, "Bar", max(12, round(316 * value / max_value)), 8, cornerRadius=999,
-        fills=BAR_ON_BLUE if dark else BAR)
+def limit(parent, value, unit, dark):
+    c = col(parent, "Limit / " + unit, gap=0, sizingH="fill")
+    txt(c, value, 28, "Bold", WHITE if dark else INK)
+    th(c, unit, 14, "Regular", "#FFFFFFCC" if dark else MUTED)
 
 
 def plan_card(parent, plan, featured):
-    name, price, audience, skus, bills, cta, kind = plan
+    name, price, audience, skus, bills, per_day, cta, kind = plan
     fg, sub = (WHITE, "#FFFFFFCC") if featured else (INK, MUTED)
     look = ({"fills": [{"type": "linearGradient", "stops": ["#1650D7", "#1D3FA6"], "from": [0, 0], "to": [1, 1]}]}
             if featured else {"fill": WHITE})
     c = col(parent, "Plan / " + name, gap=24, padding=[36 if featured else 32, 32, 32, 32], cornerRadius=28,
             width=380, sizingH="fixed", clip=True, effects=SHADOW, **look)
     if featured:
-        glow(c, 220, -120, 260, 220, ORANGE, 0.7, 90)
+        glow(c, 220, -120, 260, 220, ORANGE, 0.6, 90)
     else:
         stroke(c)
     head = row(c, "Head", gap=10, mainAlign="spaceBetween", sizingH="fill")
@@ -392,14 +414,14 @@ def plan_card(parent, plan, featured):
     pr = row(c, "Price", gap=8, crossAlign="baseline")
     txt(pr, price, 56, "Bold", fg)
     th(pr, "บาท / เดือน", 16, "Regular", sub)
-    meters = col(c, "Limits", gap=16, sizingH="fill")
-    meter(meters, "รหัสสินค้า", skus, 1000, featured)
-    meter(meters, "บิลต่อเดือน", bills, 2000, featured)
-    inc = col(c, "Included", gap=10)
-    for item in INCLUDED:
-        r = row(inc, "Item", gap=10)
-        icon(r, CHECK, 20, "#FFD2B0" if featured else BLUE)
-        th(r, item, 15, "Regular", fg)
+    limits = row(c, "Limits", gap=16, sizingH="fill", padding=[16, 0, 16, 0])
+    one("node.set", {"id": limits, "stroke": "#FFFFFF33" if featured else BORDER, "strokeTopWeight": 1,
+                     "strokeBottomWeight": 1, "strokeLeftWeight": 0, "strokeRightWeight": 0, "strokeAlign": "inside"})
+    limit(limits, skus, "รหัสสินค้า", featured)
+    limit(limits, bills, "บิลต่อเดือน", featured)
+    fit = row(c, "Fit", gap=10)
+    icon(fit, MENU_ICONS["store"], 20, "#FFD2B0" if featured else BLUE)
+    th(fit, per_day, 15, "Bold", fg)
     b = pill(c, cta, kind)
     one("node.set", {"id": b, "sizingH": "fill", "mainAlign": "center"})
 
@@ -407,22 +429,21 @@ def plan_card(parent, plan, featured):
 def pricing(parent):
     s = section(parent, "Pricing", gap=40, pad=(96, 80, 96, 80), clip=True,
                 fills=[{"type": "linearGradient", "stops": [WHITE, "#F1F5FE", "#FFF4EA"]}])
-    glow(s, -200, 360, 520, 520, "#BFD0F7", 0.7, 160)
-    glow(s, 1140, 420, 520, 520, "#FFD2B0", 0.8, 160)
-    heading(s, "เลือกแพ็กเกจที่เหมาะกับร้าน",
-            "เริ่มฟรี แล้วค่อยอัปเกรดเมื่อร้านโตขึ้น ทุกแพ็กเกจใช้ฟีเจอร์หลักได้ครบ")
-    toggle = row(s, "Billing toggle", gap=4, padding=4, cornerRadius=999, fill=WHITE)
-    stroke(toggle)
-    on = row(toggle, "Monthly", padding=[0, 20, 0, 20], cornerRadius=999, height=44, sizingV="fixed", fill=INK)
-    th(on, "รายเดือน", 15, "Bold", WHITE)
-    off = row(toggle, "Yearly", gap=8, padding=[0, 12, 0, 20], cornerRadius=999, height=44, sizingV="fixed")
-    th(off, "รายปี", 15, "Bold", MUTED)
-    save = row(off, "Save", padding=[2, 8, 2, 8], cornerRadius=999, fill=ORANGE_50)
-    th(save, "ลด 10%", 14, "Bold", ORANGE_700)
+    glow(s, -200, 360, 520, 520, "#BFD0F7", 0.6, 160)
+    glow(s, 1140, 420, 520, 520, "#FFD2B0", 0.7, 160)
+    heading(s, "เลือกแพ็กเกจตามขนาดร้าน",
+            "เริ่มฟรี แล้วค่อยอัปเกรดเมื่อสินค้าหรือบิลเกินลิมิต ทุกแพ็กเกจใช้ฟีเจอร์หลักได้ครบ")
     cards = row(s, "Plans", gap=24, crossAlign="center", clip=False)   # clipping lightens the shadows
     for i, plan in enumerate(PLANS):
         plan_card(cards, plan, i == 1)
-    center(s, "* ราคาอยู่ระหว่างทดสอบความเต็มใจจ่ายกับร้านนำร่อง", 14, "Regular", MUTED)
+    inc = row(s, "Included in every plan", gap=24, padding=[16, 24, 16, 24], cornerRadius=999, fill=WHITE)
+    stroke(inc)
+    th(inc, "ทุกแพ็กเกจมี", 15, "Bold", INK)
+    for item in INCLUDED:
+        r = row(inc, "Item", gap=8)
+        icon(r, CHECK, 20, BLUE)
+        th(r, item, 15, "Regular", INK)
+    center(s, "ราคาช่วงเปิดตัว อาจปรับก่อนเปิดใช้งานจริง", 14, "Regular", MUTED)
 
 
 # ---------------------------------------------------------------- FAQ
@@ -430,10 +451,10 @@ FAQ = [
     ("khonnai คืออะไร?",
      "เว็บแอปบนมือถือสำหรับร้านค้าส่งชุดชั้นในและเสื้อผ้าขนาดเล็ก ช่วยจัดการสินค้าแยกตามรุ่น สี และไซซ์\n"
      "บันทึกการจอง และออกบิลจากข้อมูลชุดเดียวกัน เพื่อลดการเช็กของซ้ำและบิลที่ไม่ตรงกับสต็อก"),
-    ("ต่างจากการจดสมุดหรือ Excel อย่างไร?", None),
     ("ต้องติดตั้งแอปไหม?", None),
     ("มีให้ทดลองใช้ฟรีไหม?", None),
-    ("ค่าสมาชิกรายเดือนเท่าไร?", None),
+    ("ถ้าสินค้าหรือบิลเกินลิมิต จะเป็นอย่างไร?", None),
+    ("ข้อมูลร้านเก็บไว้ที่ไหน ปลอดภัยไหม?", None),
 ]
 
 
@@ -449,7 +470,7 @@ def faq(parent):
         icon(head, CHEVRON_DOWN if a else CHEVRON_RIGHT, 16, INK)
         if a:
             th(item, a, 15, "Regular", MUTED, lineHeight="170%")
-    pill(s, "ติดต่อทีม khonnai", "primary", arrow=True)
+    pill(s, "ถามทีมทาง LINE", "primary", lead=MENU_ICONS["message"])
 
 
 # ---------------------------------------------------------------- closing CTA
@@ -457,20 +478,38 @@ def closing(parent):
     s = section(parent, "Closing CTA", pad=(0, 80, 96, 80))
     b = box(s, "Panel", 1280, 600, layout="vertical", gap=20, crossAlign="center", padding=[72, 0, 0, 0],
             cornerRadius=32, sizingH="fixed", sizingV="fixed", clip=True,
-            fills=[{"type": "linearGradient", "stops": ["#1650D7", "#2459DB", "#6A6FD8", "#E98E86", "#FF9F5E"]}])
-    glow(b, -120, 260, 480, 420, ORANGE, 0.6)
-    glow(b, 900, -140, 520, 360, "#7FA8FF", 0.6)
+            fills=[{"type": "linearGradient", "stops": CLOSING_GRADIENT}])
+    glow(b, 900, -140, 520, 360, "#7FA8FF", 0.5)
     center(b, "ให้คนในจำสต็อก\nแทนเจ้าของร้าน", 56, "Bold", WHITE, lineHeight="125%")
-    pill(b, "เริ่มใช้ฟรี", "white", arrow=True)
+    ctas = row(b, "CTAs", gap=12)
+    pill(ctas, PRIMARY, "white", arrow=True)
+    pill(ctas, LINE_CTA, "outline-light", lead=MENU_ICONS["message"])
     phones = box(b, "Phones", 1280, 320)
-    phone(phones, "stock", 340, 380, 70, "สต็อก")
-    phone(phones, "bill", 340, 740, 70, "บิลเงินสด")
-    phone(phones, "home", 420, 552, 20, "หน้าโฮม")
+    phone(phones, "stock", 640, 300, 80, "สต็อก")
+    phone(phones, "bill", 640, 690, 80, "บิลเงินสด")
+    phone(phones, "home", 760, 470, 24, "หน้าโฮม")
 
 
 # ---------------------------------------------------------------- footer
-FOOTER = [("PRODUCT", ["Features", "Pricing", "Services"]), ("COMPANY", ["ทีม Khonnai", "Contact Us"]),
-          ("RESOURCES", ["คำถามที่พบบ่อย", "นโยบายความเป็นส่วนตัว"])]
+FOOTER = [("ผลิตภัณฑ์", ["ฟีเจอร์", "ราคา", "บริการ"]), ("ทีม", ["ทีม khonnai", "ติดต่อ"]),
+          ("ช่วยเหลือ", ["คำถามที่พบบ่อย", "นโยบายความเป็นส่วนตัว"])]
+
+
+def line_card(parent, width=340):
+    """Talk to a person on LINE; the QR and OA id wait for the team's real account."""
+    card = row(parent, "LINE card", gap=16, padding=20, cornerRadius=20, fill=SURFACE, width=width,
+               sizingH="fixed", crossAlign="min")
+    stroke(card)
+    qr = box(card, "QR placeholder", 96, 96, layout="vertical", mainAlign="center", crossAlign="center",
+             cornerRadius=12, fill=WHITE)
+    one("node.set", {"id": qr, "stroke": ORANGE, "strokeWeight": 1.5, "strokeAlign": "inside", "dashes": [4, 4]})
+    center(qr, "QR LINE OA\nรอข้อมูลจริง", 14, "Regular", PLACEHOLDER, lineHeight="140%")
+    t = col(card, "Text", gap=8, sizingH="fill")
+    th(t, "คุยกับทีมทาง LINE", 18, "Bold", INK)
+    th(t, "ถามก่อนเริ่มใช้ หรือให้ทีม\nช่วยตั้งค่าร้าน", 15, "Regular", MUTED, lineHeight="160%")
+    btn = pill(t, "เพิ่มเพื่อน LINE", "dark", 44, lead=MENU_ICONS["message"])
+    one("node.set", {"id": btn, "sizingH": "fill", "mainAlign": "center"})
+    return card
 
 
 def footer(parent):
@@ -484,26 +523,20 @@ def footer(parent):
     one("node.set", {"id": logo, "name": "Logo / khonnai"})
     th(brand, "คนใน · ระบบบริหารสต็อก การจองสินค้า\nและการออกบิลบนมือถือ", 15, "Regular", MUTED, lineHeight="165%")
     for head, links in FOOTER:
-        c = col(top, head, gap=14, width=170, sizingH="fixed")
-        txt(c, head, 14, "Bold", INK, letterSpacing="6%")
+        c = col(top, head, gap=0, width=170, sizingH="fixed")
+        th(c, head, 15, "Bold", INK)
         for link in links:
-            if any("฀" <= ch <= "๿" for ch in link):
-                th(c, link, 15, "Regular", MUTED)
-            else:
-                txt(c, link, 15, "Regular", MUTED)
-    card = col(top, "Demo card", gap=16, padding=24, cornerRadius=20, fill=SURFACE, width=340, sizingH="fixed")
-    stroke(card)
-    th(card, "นัดดูเดโมกับทีม", 18, "Bold", INK)
-    th(card, "ให้ทีมพาดูการทำงานจริง\nบนมือถือของคุณ", 15, "Regular", MUTED, lineHeight="165%")
-    btn = pill(card, "นัดดูเดโม", "dark", 44)
-    one("node.set", {"id": btn, "sizingH": "fill", "mainAlign": "center"})
+            r = row(c, "Link / " + link, minHeight=44, sizingH="fill")
+            th(r, link, 15, "Regular", MUTED)
+    line_card(top)
     bottom = box(s, "Bottom", 1280, 100, layout="horizontal", mainAlign="spaceBetween", crossAlign="center",
                  sizingH="fixed", sizingV="hug", paddingTop=24)
     one("node.set", {"id": bottom, "stroke": BORDER, "strokeTopWeight": 1, "strokeRightWeight": 0,
                      "strokeBottomWeight": 0, "strokeLeftWeight": 0, "strokeAlign": "inside"})
-    th(bottom, "© 2569 Khonnai · TED Youth Startup Fund · KX-TECHBITE", 14, "Regular", MUTED)
+    th(bottom, "© 2569 khonnai", 14, "Regular", MUTED)
     links = row(bottom, "Links", gap=20)
-    txt(links, "Terms of Use  ·  Privacy Policy", 14, "Regular", MUTED)
+    row_ = row(links, "Link / ข้อกำหนด", minHeight=44)
+    th(row_, "ข้อกำหนดการใช้งาน", 14, "Regular", MUTED)
     lang_switch(links, outline=True)
 
 
@@ -524,14 +557,9 @@ MENU_ICONS = {  # Lucide, 24 grid
     "phone": "M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z M12 18h.01",
 }
 FEATURE_MODULES = [("package", "สต็อกสินค้า"), ("receipt", "ออกบิล"), ("bookmark", "การจอง"), ("home", "หน้าโฮมสรุปร้าน")]
-FEATURE_LINKS = [("sparkle", "ดูเดโมการทำงาน"), ("arrow", "ทดลองใช้ฟรี")]
-FIT_FOR = [("shirt", "ร้านค้าส่งชุดชั้นใน"), ("shirt", "ร้านเสื้อผ้าขนาดเล็ก"), ("store", "ขายหน้าร้าน"),
-           ("message", "รับออเดอร์ทาง LINE")]
-# proposed service list for the mock-up; confirm with the team before launch
-SERVICES = [("calendar", "นัดดูเดโม", "ทีมพาดูการทำงานจริง"), ("help", "ศูนย์ช่วยเหลือ", "บัญชีและค่าสมาชิก"),
-            ("store", "ช่วยตั้งค่าร้าน", "เพิ่มสินค้าชุดแรกให้"), ("sparkle", "อัปเดตระบบ", "ฟีเจอร์ใหม่ล่าสุด"),
-            ("upload", "ย้ายข้อมูลเดิม", "จากสมุดหรือ Excel"), ("book", "คู่มือการใช้งาน", "เริ่มต้นใช้งาน"),
-            ("teach", "สอนใช้งาน", "ทีละขั้นบนมือถือ"), ("message", "ติดต่อทีม", "LINE และโทรศัพท์")]
+# services the team can offer by hand today (confirm before launch); four, so the choice stays small
+SERVICES = [("calendar", "นัดดูเดโม", "ทีมพาดูการทำงานจริง"), ("store", "ช่วยตั้งค่าร้าน", "เพิ่มสินค้าชุดแรกให้"),
+            ("upload", "ย้ายข้อมูลเดิม", "จากสมุดหรือ Excel"), ("message", "คุยกับทีมทาง LINE", "ถามก่อนเริ่มใช้")]
 PANEL_FILLS = [{"type": "linearGradient", "stops": ["#FFFFFFF2", "#EEF3FDF2"]}]
 
 
@@ -548,8 +576,8 @@ def panel(parent, x, w, **props):
 
 
 def features_panel(parent, x):
-    p = panel(parent, x, 820, layout="horizontal", gap=0, padding=8, crossAlign="min")
-    left = col(p, "Modules", gap=0, width=232, height=316, sizingH="fixed", sizingV="fixed", padding=8,
+    p = panel(parent, x, 568, layout="horizontal", gap=0, padding=8, crossAlign="min")
+    left = col(p, "Modules", gap=0, width=244, height=300, sizingH="fixed", sizingV="fixed", padding=8,
                mainAlign="spaceBetween")
     mods = col(left, "List", gap=4, sizingH="fill")
     for i, (key, label) in enumerate(FEATURE_MODULES):
@@ -559,29 +587,17 @@ def features_panel(parent, x):
                    cornerRadius=999, fill=BLUE_50 if i == 0 else None)
         menu_icon(tile, key, 18, BLUE if i == 0 else MUTED)
         th(it, label, 16, "Bold" if i == 0 else "Regular", INK)
-    links = col(left, "Links", gap=2, sizingH="fill")
-    for key, label in FEATURE_LINKS:
-        it = row(links, "Link / " + label, gap=12, padding=[10, 12, 10, 12], minHeight=44)
-        menu_icon(it, key, 18, MUTED)
-        th(it, label, 15, "Regular", MUTED)
-    right = row(p, "Content", gap=0, cornerRadius=16, fill="#FFFFFFB3", crossAlign="min")
-    start = col(right, "Get started", gap=16, padding=[20, 16, 16, 16], width=300, sizingH="fixed")
-    th(start, "เริ่มต้นใช้งาน", 14, "Bold", MUTED, letterSpacing="4%")
-    card = col(start, "Card", gap=12, padding=[0, 0, 16, 0], cornerRadius=16, fill=WHITE, effects=SHADOW,
+    it = row(left, "Link / " + PRIMARY, gap=12, padding=[10, 12, 10, 12], minHeight=44)
+    menu_icon(it, "arrow", 18, BLUE)
+    th(it, PRIMARY, 15, "Bold", BLUE)
+    right = col(p, "Preview", gap=0, cornerRadius=16, fill="#FFFFFFB3", padding=16, width=308, sizingH="fixed")
+    card = col(right, "Card", gap=12, padding=[0, 0, 16, 0], cornerRadius=16, fill=WHITE, effects=SHADOW,
                sizingH="fill", clip=True)
     stroke(card)
-    screen_img(card, "tile-stock-wide.png", 268, 150, 0)
+    screen_img(card, "tile-stock-wide.png", 276, 156, 0)
     t = col(card, "Text", gap=6, padding=[0, 16, 0, 16])
-    th(t, "จัดการสต็อกแยกรุ่น สี ไซซ์", 17, "Bold", INK)
-    more = row(t, "More", gap=4)
-    th(more, "ดูรายละเอียด", 14, "Regular", INK)
-    icon(more, CHEVRON_RIGHT, 16, INK)
-    fit = col(right, "Fit for", gap=4, padding=[20, 16, 16, 20], width=272, sizingH="fixed")
-    th(fit, "เหมาะกับร้าน", 14, "Bold", MUTED, letterSpacing="4%")
-    for key, label in FIT_FOR:
-        it = row(fit, "Fit / " + label, gap=12, padding=[10, 0, 10, 0], minHeight=44)
-        menu_icon(it, key, 20, BLUE)
-        th(it, label, 16, "Regular", INK)
+    th(t, "สต็อกแยกรุ่น สี ไซซ์", 17, "Bold", INK)
+    th(t, "เห็นของพร้อมขายทุกช่องในจอเดียว", 15, "Regular", MUTED)
 
 
 def services_panel(parent, x):
@@ -590,7 +606,7 @@ def services_panel(parent, x):
         column = col(p, "Column " + str(c + 1), gap=8, width=282, sizingH="fixed")
         for key, title, sub in SERVICES[c::2]:
             it = row(column, "Item / " + title, gap=14, padding=[8, 8, 8, 8], cornerRadius=14, sizingH="fill",
-                     fill=WHITE if (c, title) == (0, "นัดดูเดโม") else None)
+                     fill=WHITE if title == SERVICES[0][1] else None)
             circle = box(it, "Icon", 44, 44, layout="horizontal", mainAlign="center", crossAlign="center",
                          cornerRadius=999, fill=WHITE)
             stroke(circle)
@@ -606,7 +622,7 @@ def menu_frame(name, y, active, build_panel, panel_w):
         run([{"command": "edit.delete", "params": {"ids": old}}])
     f = box(None, name, 1440, 560, layout="vertical", padding=[24, 120, 0, 120], crossAlign="center",
             sizingH="fixed", sizingV="fixed", clip=True,
-            fills=[{"type": "linearGradient", "stops": ["#1650D7", "#2459DB", "#4C6BDC", "#C48AA8", "#FF9F5E"]}])
+            fills=[{"type": "linearGradient", "stops": BRAND_GRADIENT}])
     one("node.set", {"id": f, "x": X + 1540, "y": y})
     items = floating_nav(f, active)
     item = one("node.get", {"id": items[active]})["absoluteBounds"]
@@ -638,8 +654,8 @@ def language_panel(parent, x):
 
 
 def menus():
-    menu_frame("Landing v2 — Features menu", 0, "Features", features_panel, 820)
-    menu_frame("Landing v2 — Services menu", 640, "Services", services_panel, 620)
+    menu_frame("Landing v2 — Features menu", 0, "ฟีเจอร์", features_panel, 568)
+    menu_frame("Landing v2 — Services menu", 640, "บริการ", services_panel, 620)
     menu_frame("Landing v2 — Language menu", 1280, "lang", language_panel, 220)
     for name in ("Landing v2 — Features menu", "Landing v2 — Services menu", "Landing v2 — Language menu"):
         export_frame(name, os.path.join(PREVIEW, name + ".png"))
