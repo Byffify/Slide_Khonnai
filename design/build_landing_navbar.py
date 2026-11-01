@@ -9,17 +9,18 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 import build_design_system as ds  # noqa: E402
 
-OUT = os.path.join(ROOT, "khonnai-landing.figcraft")
+OUT = os.environ.get("KHONNAI_LANDING_OUT") or os.path.join(ROOT, "khonnai-landing.figcraft")
 PREVIEW = os.path.join(ROOT, "preview", "landing")
 LOGO = os.path.join(os.path.dirname(ROOT), "build", "assets", "khonnai-blue.png")
 F = ds.FONT_FAMILY
 FONT_TH = os.path.join(ROOT, "fonts", "NotoSansThai[wdth,wght].ttf")
-F_TH = "Leelawadee UI"   # Thai; same system font as the audit-fixes-v1 app screens
+F_TH = "Noto Sans Thai"   # Thai web font (Google Fonts); not installed, so export through export_frame()
 
 BLUE = "#1650D7"
 BLUE_50 = "#EEF3FD"
@@ -57,7 +58,12 @@ def run(cmds, new=False):
         json.dump(steps, f, ensure_ascii=False)
         script = f.name
     args = [ds.CLI, "run", script, "--out", OUT] + ([] if new else ["--in", OUT])
-    proc = subprocess.run(args, capture_output=True, text=True, encoding="utf-8")
+    for attempt in range(6):
+        proc = subprocess.run(args, capture_output=True, text=True, encoding="utf-8")
+        # os error 1224: another process (indexer / antivirus) briefly maps the file we just wrote
+        if "os error 1224" not in proc.stderr + proc.stdout:
+            break
+        time.sleep(2 + attempt)
     os.unlink(script)
     results = []
     for line in proc.stdout.splitlines():
@@ -73,6 +79,14 @@ def run(cmds, new=False):
 
 def one(command, params):
     return run([{"command": command, "params": params}])[0]
+
+
+def export_frame(name, path):
+    """Export a top-level frame from a session that has the fonts loaded (`figcraft-cli export` does not)."""
+    ids = [i for i in run([{"command": "select.byName", "params": {"query": name}}])[0]["selection"]
+           if one("node.get", {"id": i}).get("name") == name]
+    run([{"command": "file.export", "params": {"ids": ids[:1], "format": "png", "path": os.path.abspath(path)}}])
+    print(path)
 
 
 def box(parent, name, w=None, h=None, **props):
