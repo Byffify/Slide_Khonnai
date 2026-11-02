@@ -4,8 +4,52 @@
     {
       "name": "slides",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["-y", "http-server", "-p", "5173", "-c-1", "."],
+      "runtimeArgs": [
+        "-y",
+        "http-server",
+        "-p",
+        "5173",
+        "-c-1",
+        "."
+      ],
       "port": 5173
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "landing",
+        "run",
+        "dev"
+      ],
+      "port": 5180
+    },
+    {
+      "name": "khonnai-mvp",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "-y",
+        "http-server",
+        "khonnai-home-mvp",
+        "-p",
+        "4173",
+        "-c-1"
+      ],
+      "port": 4173
+    },
+    {
+      "name": "landing-dist",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "-y",
+        "http-server",
+        "khonnai-home-mvp/landing/dist",
+        "-p",
+        "4190",
+        "-c-1"
+      ],
+      "port": 4190
     }
   ]
 }
