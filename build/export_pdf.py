@@ -1,11 +1,13 @@
 """Capture every slide of khonnai-pitch.html in its final state and save khonnai-pitch.pdf.
 
 Uses the installed Google Chrome through Playwright (no browser download):
-    python build/export_pdf.py
+    python build/export_pdf.py                      # khonnai-pitch.html -> khonnai-pitch.pdf
+    python build/export_pdf.py techbite-pitch.html  # -> techbite-pitch.pdf
 Each slide is shown with all its click-steps revealed and given time for its
-animations to finish; the presenter timer and reveal.js controls are hidden.
+animations to finish; the presenter timer, reveal.js controls and the live clock are hidden.
 """
 import io
+import sys
 from pathlib import Path
 
 import img2pdf
@@ -13,8 +15,8 @@ from PIL import Image
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
-DECK = ROOT / 'khonnai-pitch.html'
-OUT = ROOT / 'khonnai-pitch.pdf'
+DECK = ROOT / (sys.argv[1] if len(sys.argv) > 1 else 'khonnai-pitch.html')
+OUT = DECK.with_suffix('.pdf')
 SETTLE_MS = 6000  # longest entrance animation (The Ask count-up and bar) finishes in ~5 s
 
 
@@ -25,7 +27,7 @@ def main():
         page = browser.new_page(viewport={'width': 1920, 'height': 1080}, device_scale_factor=1.5)
         page.goto(DECK.as_uri())
         page.wait_for_function('window.Reveal && Reveal.isReady()')
-        page.add_style_tag(content='#ptimer, .reveal .controls { display: none !important; }')
+        page.add_style_tag(content='#ptimer, .reveal .controls, .cv-clock { display: none !important; }')
         page.evaluate('document.fonts.ready')
         total = page.evaluate('Reveal.getTotalSlides()')
         for i in range(total):

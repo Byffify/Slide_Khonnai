@@ -11,7 +11,7 @@ SLIDES.append('''
   <div class="abs" style="left:150px;top:290px">
     <div class="kick in" style="--i:1">milestone_2 --pitch</div>
     <div class="h1 wm in" style="--i:2;margin-top:50px;font-size:172px"><img class="uh-logo" src="{LOGO}" alt="Khonnai" style="display:block;height:150px;width:auto"></div>
-    <div class="h3 in" style="--i:3;margin-top:48px;font-weight:400;color:var(--ink-2)">คนใน · ระบบบริหารสต็อก การจองสินค้า และการออกบิลบนมือถือ</div>
+    <div class="h3 in" style="--i:3;margin-top:48px;font-weight:400;color:var(--ink-2);white-space:nowrap">คนใน · ระบบบริหารสต็อก การจองสินค้า<br>และการออกบิลบนมือถือ</div>
     <div class="lede in" style="--i:5;margin-top:60px;color:var(--ink)">สำหรับร้านขายส่งชุดชั้นในขนาดเล็ก</div>
   </div>
   <div class="abs row in soft" style="left:150px;bottom:92px;--i:7;align-items:center;gap:24px"><span class="pill solid">กลุ่ม 3</span><span class="h4" style="font-size:30px">My Little Pony</span></div>
@@ -221,8 +221,8 @@ SLIDES.append('''
 <section data-silk="hot" data-cubes="corners" data-sec="10" data-secname="Vision">
   <div class="abs c" style="left:0;right:0;top:300px">
     <div class="kick in" style="--i:1">long_term_vision</div>
-    <div class="statement in" style="--i:2;margin-top:40px;font-size:96px">ระบบสต็อกและออกบิลเฉพาะทาง</div>
-    <div class="statement in" style="--i:4;margin-top:20px;font-size:96px"><span class="g">ของร้านค้าส่งเสื้อผ้าทั่วไทย.</span></div>
+    <div class="statement in" style="--i:2;margin-top:40px;font-size:84px">ระบบสต็อกและออกบิลเฉพาะทาง</div>
+    <div class="statement in" style="--i:4;margin-top:20px;font-size:84px"><span class="g">ของร้านค้าส่งเสื้อผ้าทั่วไทย.</span></div>
     <div class="lede in" style="--i:6;margin-top:60px">จาก SAM กทม. + ชลบุรี <b>5,696</b> กิจการ สู่ TAM ทั่วประเทศ <b>8,770</b> กิจการ</div>
   </div>
   <aside class="notes">

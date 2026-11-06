@@ -2,9 +2,11 @@
 
 The original layout, CSS, animations and scripts are kept; only slide content,
 brand chrome and a few data hooks are swapped. Run from anywhere:
-    python build/build_deck.py
+    python build/build_deck.py            # Milestone 2 deck  -> khonnai-pitch.html
+    python build/build_deck.py techbite   # TechByte deck     -> techbite-pitch.html
 """
 import base64
+import importlib
 import re
 import sys
 from pathlib import Path
@@ -12,10 +14,11 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
-from slides_khonnai import SLIDES, TEAM  # noqa: E402
+deck = importlib.import_module(f'slides_{sys.argv[1] if len(sys.argv) > 1 else "khonnai"}')
+SLIDES, TEAM = deck.SLIDES, deck.TEAM
 
 SRC = HERE / 'source-index.html'  # the cloned U-Hackathon deck, kept untouched
-OUT = ROOT / 'khonnai-pitch.html'
+OUT = ROOT / getattr(deck, 'OUT_NAME', 'khonnai-pitch.html')
 ASSETS = HERE / 'assets'
 
 
@@ -25,7 +28,7 @@ def data_uri(name, mime):
 
 def photo_uri(i):
     for ext, mime in (('jpg', 'image/jpeg'), ('png', 'image/png'), ('webp', 'image/webp')):
-        p = ASSETS / f'team-{i + 1}.{ext}'
+        p = ASSETS / f"{getattr(deck, 'PHOTO_PREFIX', 'team-')}{i + 1}.{ext}"
         if p.exists():
             return data_uri(p.name, mime)
     return None
@@ -153,6 +156,7 @@ def main():
         '{KICON}': data_uri('khonnai-k.png', 'image/png'),
         '{TEAM}': team_cards(),
     }
+    subs.update({k: data_uri(name, mime) for k, (name, mime) in getattr(deck, 'ASSETS', {}).items()})
     body = '\n'.join(SLIDES)
     for k, v in subs.items():
         body = body.replace(k, v)
@@ -162,15 +166,15 @@ def main():
     end = html.rindex('</section>') + len('</section>')
     html = html[:start] + '\n' + body + '\n' + html[end:]
 
-    html = re.sub(r'<title>.*?</title>', '<title>Khonnai · Pitch Deck · Milestone 2</title>', html, count=1, flags=re.S)
+    html = re.sub(r'<title>.*?</title>', f"<title>{getattr(deck, 'TITLE', 'Khonnai · Pitch Deck · Milestone 2')}</title>", html, count=1, flags=re.S)
 
     # footer brand (built by the chrome script)
     html, n = re.subn(r'<div class="brand"><img class="uh-logo" src="data:image/webp;base64,[^"]+" alt="U-Hackathon"',
                       f'<div class="brand"><img class="uh-logo" src="{logo}" alt="Khonnai"', html)
     if n != 1:
         raise SystemExit(f'brand logo: found {n}')
-    html = replace_once(html, '<span class="ev">Flow Summit</span>', '<span class="ev">Milestone 2 · กลุ่ม 3</span>', 'brand text')
-    html = replace_once(html, 'const NSEC = 11;', 'const NSEC = 12;', 'section count')
+    html = replace_once(html, '<span class="ev">Flow Summit</span>', f'<span class="ev">{getattr(deck, "BRAND", "Milestone 2 · กลุ่ม 3")}</span>', 'brand text')
+    html = replace_once(html, 'const NSEC = 11;', f"const NSEC = {getattr(deck, 'NSEC', 12)};", 'section count')
 
     # prize-pool scene: read the two amounts from the slide instead of hard-coded prize values
     html = replace_once(html, 'const A = 1000000, B = 2500000,',
